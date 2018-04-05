@@ -91,6 +91,9 @@ Description: Adds some extra security to WordPress by restricting the rate at wh
 \--------------------------------------------------------------------/
 */
 
+global $loginlockdown_db_version;
+global $loginlockdownOptions;
+
 $loginlockdown_db_version = "1.0";
 $loginlockdownOptions = get_loginlockdownOptions();
 
@@ -189,7 +192,9 @@ function lockDown($username = "") {
 				$loginlockdownOptions['lockout_length'] . " MINUTE), '%s')";
 		$insert = $wpdb->prepare( $insert, $subnet[0] );
 		$results = $wpdb->query($insert);
+		return true;
 	}
+	return false;
 }
 
 function isLockedDown() {
