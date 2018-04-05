@@ -572,3 +572,6 @@ if ( isset($loginlockdown_db_version) ) {
 	}
 }
 
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	require_once dirname( __FILE__ ) . '/cli.php';
+}
