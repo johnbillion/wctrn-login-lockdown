@@ -30,35 +30,44 @@ class Login_Lockdown_Command extends WP_CLI_Command {
 		$_SERVER['REMOTE_ADDR'] = $ip;
 
 		// Lock down the IP:
-		$result = lockDown( $username );
+		$success = lockDown( $username );
 
 		// Unset the superglobal to avoid pollution.
 		unset( $_SERVER['REMOTE_ADDR'] );
 
-		if ( $result ) {
-			WP_CLI::success( "IP address {$ip} locked down." );
-		} else {
+		if ( ! $success ) {
 			WP_CLI::error( 'Invalid username.' );
 		}
+
+		WP_CLI::success( "IP address {$ip} locked down." );
 	}
 
 	/**
 	 * Is the IP address currently locked down?
 	 *
+	 * Return an exit code on whether the provided IP address is currently
+	 * locked down or not.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <ip-address>
-	 * : IP Address to check.
+	 * : IP address to check.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Check an IP address
+	 *     # Check a locked-down IP address
 	 *     $ wp login-lockdown is-locked-down 127.0.0.1
-	 *     Error: IP Address 127.0.0.1 is locked down
+	 *     IP address 127.0.0.1 is locked down
 	 *
-	 *     # Check an IP address
+	 *     # Check an open IP address
 	 *     $ wp login-lockdown is-locked-down 1.2.3.4
-	 *     Success: IP Address 1.2.3.4 is not locked down
+	 *     IP address 1.2.3.4 is not locked down
+	 *
+	 *     # Use the exit code to act on a locked-down IP address
+	 *     $ if $(wp login-lockdown is-locked-down 127.0.0.1); then
+	 *          echo "Oh noes, locked-down it is!"
+	 *       fi
+	 *     Oh noes, locked-down it is!
 	 *
 	 * @subcommand is-locked-down
 	 */
@@ -69,16 +78,14 @@ class Login_Lockdown_Command extends WP_CLI_Command {
 		$_SERVER['REMOTE_ADDR'] = $ip;
 
 		// Check the lockdown status:
-		$result = isLockedDown();
+		$locked = isLockedDown();
+		$state  = $locked ? 'locked down' : 'not locked down';
 
 		// Unset the superglobal to avoid pollution.
 		unset( $_SERVER['REMOTE_ADDR'] );
 
-		if ( $result ) {
-			WP_CLI::error( "IP address {$ip} is locked down." );
-		} else {
-			WP_CLI::success( "IP address {$ip} is not locked down." );
-		}
+		WP_CLI::line( "IP address $ip is $state." );
+		exit( $locked ? 0 : 1 );
 	}
 
 	/**
@@ -167,9 +174,9 @@ class Login_Lockdown_Command extends WP_CLI_Command {
 			SET release_date = now()
 			WHERE lockdown_ID = %d
 		", $id );
-		$result = $wpdb->query( $releasequery );
+		$success = $wpdb->query( $releasequery );
 
-		if ( false === $result ) {
+		if ( ! $success ) {
 			WP_CLI::error( "Could not release IP address {$ip}." );
 		}
 
