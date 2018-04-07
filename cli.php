@@ -3,7 +3,7 @@
 /**
  * Manages login lockdowns of IP addresses.
  */
-class Login_Lockdown_Command extends WP_CLI_Command {
+class Login_LockDown_Command extends WP_CLI_Command {
 
 	/**
 	 * Locks down an IP address for a given username.
@@ -19,10 +19,10 @@ class Login_Lockdown_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Lock down an IP address
-	 *     $ wp login-lockdown lockdown 127.0.0.1 admin
+	 *     $ wp login-lockdown lock 127.0.0.1 admin
 	 *     Success: IP Address locked down.
 	 */
-	function lockdown( $args, $assoc_args ) {
+	function lock( $args, $assoc_args ) {
 		$ip       = $args[0];
 		$username = $args[1];
 
@@ -56,22 +56,22 @@ class Login_Lockdown_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Check a locked-down IP address
-	 *     $ wp login-lockdown is-locked-down 127.0.0.1
-	 *     IP address 127.0.0.1 is locked down
+	 *     $ wp login-lockdown is-locked 127.0.0.1
+	 *     IP address 127.0.0.1 is locked
 	 *
 	 *     # Check an open IP address
-	 *     $ wp login-lockdown is-locked-down 1.2.3.4
-	 *     IP address 1.2.3.4 is not locked down
+	 *     $ wp login-lockdown is-locked 1.2.3.4
+	 *     IP address 1.2.3.4 is not locked
 	 *
 	 *     # Use the exit code to act on a locked-down IP address
-	 *     $ if $(wp login-lockdown is-locked-down 127.0.0.1); then
-	 *          echo "Oh noes, locked-down it is!"
+	 *     $ if $(wp login-lockdown is-locked 127.0.0.1); then
+	 *          echo "Oh noes, locked it is!"
 	 *       fi
-	 *     Oh noes, locked-down it is!
+	 *     Oh noes, locked it is!
 	 *
-	 * @subcommand is-locked-down
+	 * @subcommand is-locked
 	 */
-	function is_locked_down( $args, $assoc_args ) {
+	function is_locked( $args, $assoc_args ) {
 		$ip = $args[0];
 
 		// The `isLockedDown()` function uses the `$_SERVER['REMOTE_ADDR']` superglobal, so we set it here:
@@ -79,7 +79,7 @@ class Login_Lockdown_Command extends WP_CLI_Command {
 
 		// Check the lockdown status:
 		$locked = isLockedDown();
-		$state  = $locked ? 'locked down' : 'not locked down';
+		$state  = $locked ? 'locked' : 'not locked';
 
 		// Unset the superglobal to avoid pollution.
 		unset( $_SERVER['REMOTE_ADDR'] );
@@ -212,4 +212,4 @@ class Login_Lockdown_Command extends WP_CLI_Command {
 
 }
 
-WP_CLI::add_command( 'login-lockdown', 'Login_Lockdown_Command' );
+WP_CLI::add_command( 'login-lockdown', 'Login_LockDown_Command' );
